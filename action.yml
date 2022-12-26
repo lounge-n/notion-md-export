@@ -9,3 +9,4 @@ inputs:
 runs:
     steps:
         - run: kotlin notion-md-export.kts ${{ inputs.notion_auth_token }} ${{ inputs.notion_database_id }}
+          shell: bash
