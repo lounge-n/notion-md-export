@@ -1,0 +1,11 @@
+name: 'Notion Markdown Export'
+inputs:
+    notion_auth_token:
+        description: Auth token of the Notion.
+        required: true
+    notion_database_id:
+        description: ID of the Notion database to be exorted.
+        required: true
+runs:
+    steps:
+        - run: notion-md-export.kts ${{ inputs.notion_auth_token }} ${{ inputs.notion_database_id }}
