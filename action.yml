@@ -9,5 +9,5 @@ inputs:
 runs:
     using: "composite"
     steps:
-        - run: kotlin notion-md-export.kts ${{ inputs.notion_auth_token }} ${{ inputs.notion_database_id }}
+        - run: kotlin notion-md-export.main.kts ${{ inputs.notion_auth_token }} ${{ inputs.notion_database_id }}
           shell: bash
