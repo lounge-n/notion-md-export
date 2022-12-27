@@ -66,8 +66,8 @@ None.
 
 | Date / Slug | About | /About | (None) |
 | --- | --- | --- | --- |
-| 2022-12-24 | example.com/post/2022/12/24/about/ | example.com/about/ | example.com/post/2022/12/24/ |
-| (None) | example.com/about/ | example.com/about/ | example.com/default/ |
+| 2022-12-24 | ./content/post/2022/12/24/about/ | ./content/about/ | ./content/post/2022/12/24/ |
+| (None) | ./content/about/ | ./content/about/ | ./content/default/ |
 
 ## Usage CLI
 
