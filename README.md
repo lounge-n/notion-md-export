@@ -1,1 +1,81 @@
 # Notion markdown export
+<aside>
+💡 **This action is still in testing and is not recommended.**
+</aside>
+
+This action will export a Notion database page to your GitHub repository in Markdown format.
+
+## Usage
+
+### Example Workflow file
+
+```yaml
+name: Notion to Markdown
+
+on:
+  workflow_dispatch:
+
+jobs:
+  export_markdown:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - uses: lounge-n/notion-md-export@main
+      with:
+        notion_auth_token: ${{ secrets.NOTION_AUTH_TOKEN }}
+        notion_database_id: ${{ secrets.NOTION_DATABASE_ID }}
+    - name: Diff
+      id: diff
+      run: |
+        git add -N .
+        git diff --name-only --quiet
+      continue-on-error: true
+    - name: Commit & Push
+      run: |
+        set -x
+        git config user.name github-actions[bot]
+        git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+        git add .
+        git commit --author=. -m 'update contents'
+        git push
+      if: steps.diff.outcome == 'failure'
+```
+
+### Inputs
+
+| Name |  |  |
+| --- | --- | --- |
+| notion_auth_token | required | Auth token of the Notion. |
+| notion_database_id | required | ID of the Notion database to be exorted. |
+
+### Output
+
+None.
+
+### Notion database properties
+
+|  | Property Type | Required |
+| --- | --- | --- |
+| Title | Title | Yes |
+| Date | Date | Yes |
+| Slug | Text | Yes |
+| Publish | Checkbox | Yes |
+| Tags | MutliSelect | (Optional) |
+
+## Markdown export path
+
+| Date / Slug | About | /About | (None) |
+| --- | --- | --- | --- |
+| 2022-12-24 | example.com/post/2022/12/24/about/ | example.com/about/ | example.com/post/2022/12/24/ |
+| (None) | example.com/about/ | example.com/about/ | example.com/default/ |
+
+## Usage CLI
+
+This script can also be used on the command line.
+Requires Kotlin.
+
+```bash
+$ ./notion-md-export.kts <Notion auth token> <Notion database id>
+```
