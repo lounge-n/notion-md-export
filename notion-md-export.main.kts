@@ -80,6 +80,7 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
             BlockType.Code -> block2MD(block.asCode())
             BlockType.Embed -> block2MD(block.asEmbed())
             BlockType.Image -> block2MD(block.asImage(), Path.of(outPutMDPath).parent)
+            BlockType.ChildPage -> block2MD(block.asChildPage())
             BlockType.Table -> block2MD(block.asTable())
             else -> {
                 println("Unsupported:${block.type}")
@@ -269,6 +270,16 @@ fun block2MD(block: ImageBlock, outPutPath: Path): String {
             }
             str += "![$caption](./$fileName)\n"
             if (!caption.isNullOrEmpty()) { str += "$caption\n" }
+        }
+    }
+    return str
+}
+
+fun block2MD(block: ChildPageBlock): String {
+    var str = ""
+    if (block.hasChildren == true) {
+        block.id?.let { id ->
+            str += "[${block.childPage.title}](https://www.notion.so/${id.replace("-", "")})\n"
         }
     }
     return str
