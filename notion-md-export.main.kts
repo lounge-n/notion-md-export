@@ -307,7 +307,7 @@ fun getRichText(richTextList: List<PageProperty.RichText>): String {
                 }
             }
             RichTextType.Equation -> {
-                str += richText.equation?.run { this.expression } ?: ""
+                str += richText.equation?.run { "\$${this.expression}\$" } ?: ""
             }
             RichTextType.Mention -> {}
         }

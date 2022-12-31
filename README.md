@@ -92,7 +92,7 @@ $ ./notion-md-export.kts <Notion auth token> <Notion database id>
 - [ ] Mention page, user
 - [ ] Date
 - [x] Emoticon
-- [ ] Mathematical formula
+- [x] Equation (but requires MathJax)
 - [x] Embed image
 - [ ] Linked image
 - [x] Bookmark
