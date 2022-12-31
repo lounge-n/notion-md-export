@@ -71,11 +71,12 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
             BlockType.HeadingThree -> block2MD(block.asHeadingThree())
             BlockType.BulletedListItem -> block2MD(block.asBulletedListItem(), outPutMDPath = outPutMDPath, indentSize = indentSize)
             BlockType.NumberedListItem -> block2MD(block.asNumberedListItem(), outPutMDPath = outPutMDPath, indentSize = indentSize)
-            BlockType.Bookmark -> block2MD(block.asBookmark())
             BlockType.LinkPreview -> block2MD(block.asLinkPreview())
+            BlockType.Bookmark -> block2MD(block.asBookmark())
             BlockType.ColumnList -> block2MD(block.asColumnList(), outPutMDPath = outPutMDPath)
             BlockType.Divider -> "---\n"
             BlockType.Quote -> block2MD(block.asQuote())
+            BlockType.ToDo -> block2MD(block.asToDo(), outPutMDPath = outPutMDPath, indentSize = indentSize)
             BlockType.Code -> block2MD(block.asCode())
             BlockType.Embed -> block2MD(block.asEmbed())
             BlockType.Image -> block2MD(block.asImage(), Path.of(outPutMDPath).parent)
@@ -93,12 +94,9 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
 }
 
 fun isContinuousBlock(currentIndex: Int, blocks: MutableList<Block>): Boolean {
+    val types = listOf(BlockType.BulletedListItem, BlockType.NumberedListItem, BlockType.ToDo)
     if (blocks.size - currentIndex > 1) {
-        if ((blocks[currentIndex].type == BlockType.BulletedListItem || blocks[currentIndex].type == BlockType.NumberedListItem) &&
-            (blocks[currentIndex + 1].type == BlockType.BulletedListItem || blocks[currentIndex + 1].type == BlockType.NumberedListItem)) {
-            return true
-        }
-        return false
+        return types.contains(blocks[currentIndex].type) && types.contains(blocks[currentIndex + 1].type)
     }
     return true
 }
@@ -220,6 +218,17 @@ fun block2MD(block: ColumnListBlock, outPutMDPath: String): String {
 }
 
 fun block2MD(block: QuoteBlock): String = block.quote?.richText?.run { "> ${getRichText(this)}" } + "\n"
+
+fun block2MD(block: ToDoBlock, outPutMDPath: String, indentSize: Int): String {
+    var str = ""
+    val check = if (block.toDo.checked) "x" else " "
+    val item = block.toDo.richText?.run { getRichText(this) } ?: ""
+    str += "${indent(indentSize)}- [$check] $item\n"
+    if (block.hasChildren == true) {
+        str += block.id?.run { buildBody(loadBlocks(this), outPutMDPath, indentSize = indentSize + 1) }
+    }
+    return str
+}
 
 fun block2MD(block: CodeBlock): String {
     var str = ""

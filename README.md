@@ -81,7 +81,7 @@ $ ./notion-md-export.kts <Notion auth token> <Notion database id>
 ## ToDo(Support blocks)
 - [x] Text paragraph
 - [ ] Embed page
-- [ ] ToDo list
+- [x] ToDo list
 - [x] Heading 1, 2, 3
 - [x] Simple table(Column list)
 - [x] Bulleted list & Numbered list
