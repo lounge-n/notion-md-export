@@ -77,3 +77,25 @@ Requires Kotlin.
 ```bash
 $ ./notion-md-export.kts <Notion auth token> <Notion database id>
 ```
+
+## ToDo(Support blocks)
+- [x] Text paragraph
+- [ ] Embed page
+- [ ] ToDo list
+- [x] Heading 1, 2, 3
+- [x] Simple table(Column list)
+- [x] Bulleted list & Numbered list
+- [ ] Toggle list
+- [x] Quote
+- [x] Divider
+- [ ] Call out
+- [ ] Mention page, user
+- [ ] Date
+- [x] Emoticon
+- [ ] Mathematical formula
+- [x] Embed image
+- [ ] Linked image
+- [x] Bookmark
+- [ ] Embed video, audio, file
+- [ ] Linked video audio, file
+- [x] Code
