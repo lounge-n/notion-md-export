@@ -85,7 +85,7 @@ $ ./notion-md-export.kts <Notion auth token> <Notion database id>
 - [x] Heading 1, 2, 3
 - [x] Simple table(Column list)
 - [x] Bulleted list & Numbered list
-- [ ] Toggle list
+- [x] Toggle list
 - [x] Quote
 - [x] Divider
 - [ ] Call out

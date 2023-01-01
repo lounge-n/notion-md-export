@@ -77,6 +77,7 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
             BlockType.Divider -> "---\n"
             BlockType.Quote -> block2MD(block.asQuote())
             BlockType.ToDo -> block2MD(block.asToDo(), indentSize = indentSize)
+            BlockType.Toggle -> block2MD(block.asToggle(), indentSize = indentSize)
             BlockType.Code -> block2MD(block.asCode())
             BlockType.Embed -> block2MD(block.asEmbed())
             BlockType.Image -> block2MD(block.asImage(), Path.of(outPutMDPath).parent)
@@ -87,13 +88,14 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
             }
         }
 
-        if (!isContinuousBlock(index, blocks)) {
-            str += "\n"
-        }
-
         if (block.hasChildren == true) {
             block.id?.let { id ->
                 val childBlocks = loadBlocks(id)
+
+                if (!isContinuousBlock(block.type, childBlocks[0].type)) {
+                    str += "\n"
+                }
+
                 if (block.type == BlockType.ColumnList) {
                     for ((columnIndex, columnBlock) in childBlocks.withIndex()) {
                         if (columnBlock.type == BlockType.Column && columnBlock.asColumn().hasChildren == true) {
@@ -107,17 +109,25 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
                     str += buildBody(childBlocks, outPutMDPath, indentSize = indentSize + 1)
                 }
             }
+        } else {
+            if (!isContinuousBlock(index, blocks)) {
+                str += "\n"
+            }
         }
     }
     return str
 }
 
 fun isContinuousBlock(currentIndex: Int, blocks: MutableList<Block>): Boolean {
-    val types = listOf(BlockType.BulletedListItem, BlockType.NumberedListItem, BlockType.ToDo)
     if (blocks.size - currentIndex > 1) {
-        return types.contains(blocks[currentIndex].type) && types.contains(blocks[currentIndex + 1].type)
+        return isContinuousBlock(blocks[currentIndex].type, blocks[currentIndex + 1].type)
     }
-    return true
+    return false
+}
+
+fun isContinuousBlock(currentBlockType: BlockType, nextBlockType: BlockType): Boolean {
+    val types = listOf(BlockType.BulletedListItem, BlockType.NumberedListItem, BlockType.ToDo, BlockType.Toggle)
+    return types.contains(currentBlockType) && types.contains(nextBlockType)
 }
 
 fun createPath(orgSlug: String?, date: String?): String {
@@ -218,6 +228,9 @@ fun block2MD(block: ToDoBlock, indentSize: Int): String {
     val item = block.toDo.richText?.run { getRichText(this) } ?: ""
     return "${indent(indentSize)}- [$check] $item\n"
 }
+
+fun block2MD(block: ToggleBlock, indentSize: Int): String =
+    "${indent(indentSize)}- ${getRichText(block.toggle.richText)}\n"
 
 fun block2MD(block: CodeBlock): String {
     var str = ""
