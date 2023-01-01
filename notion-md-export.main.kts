@@ -65,18 +65,18 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
     var str = ""
     for ((index, block) in blocks.withIndex()) {
         str += when (block.type) {
-            BlockType.Paragraph -> block2MD(block.asParagraph())
+            BlockType.Paragraph -> block2MD(block.asParagraph(), indentSize = indentSize)
             BlockType.HeadingOne -> block2MD(block.asHeadingOne())
             BlockType.HeadingTwo -> block2MD(block.asHeadingTwo())
             BlockType.HeadingThree -> block2MD(block.asHeadingThree())
-            BlockType.BulletedListItem -> block2MD(block.asBulletedListItem(), outPutMDPath = outPutMDPath, indentSize = indentSize)
-            BlockType.NumberedListItem -> block2MD(block.asNumberedListItem(), outPutMDPath = outPutMDPath, indentSize = indentSize)
+            BlockType.BulletedListItem -> block2MD(block.asBulletedListItem(), indentSize = indentSize)
+            BlockType.NumberedListItem -> block2MD(block.asNumberedListItem(), indentSize = indentSize)
             BlockType.LinkPreview -> block2MD(block.asLinkPreview())
             BlockType.Bookmark -> block2MD(block.asBookmark())
-            BlockType.ColumnList -> block2MD(block.asColumnList(), outPutMDPath = outPutMDPath)
+            BlockType.ColumnList -> ""  // NOP
             BlockType.Divider -> "---\n"
             BlockType.Quote -> block2MD(block.asQuote())
-            BlockType.ToDo -> block2MD(block.asToDo(), outPutMDPath = outPutMDPath, indentSize = indentSize)
+            BlockType.ToDo -> block2MD(block.asToDo(), indentSize = indentSize)
             BlockType.Code -> block2MD(block.asCode())
             BlockType.Embed -> block2MD(block.asEmbed())
             BlockType.Image -> block2MD(block.asImage(), Path.of(outPutMDPath).parent)
@@ -89,6 +89,24 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
 
         if (!isContinuousBlock(index, blocks)) {
             str += "\n"
+        }
+
+        if (block.hasChildren == true) {
+            block.id?.let { id ->
+                val childBlocks = loadBlocks(id)
+                if (block.type == BlockType.ColumnList) {
+                    for ((columnIndex, columnBlock) in childBlocks.withIndex()) {
+                        if (columnBlock.type == BlockType.Column && columnBlock.asColumn().hasChildren == true) {
+                            str += columnBlock.id?.run { buildBody(loadBlocks(this), outPutMDPath) }
+                        }
+                        if (!isContinuousBlock(columnIndex, childBlocks)) {
+                            str += "\n"
+                        }
+                    }
+                } else {
+                    str += buildBody(childBlocks, outPutMDPath, indentSize = indentSize + 1)
+                }
+            }
         }
     }
     return str
@@ -174,7 +192,8 @@ fun getTags(page: Page): String? {
     return null
 }
 
-fun block2MD(block: ParagraphBlock): String = "${getRichText(block.paragraph.richText)}\n"
+fun block2MD(block: ParagraphBlock, indentSize: Int = 0): String =
+    "${indent(indentSize)}${getRichText(block.paragraph.richText)}\n"
 
 fun block2MD(block: HeadingOneBlock): String = "# ${getRichText(block.heading1.richText)}\n"
 
@@ -182,53 +201,22 @@ fun block2MD(block: HeadingTwoBlock): String = "## ${getRichText(block.heading2.
 
 fun block2MD(block: HeadingThreeBlock): String = "### ${getRichText(block.heading3.richText)}\n"
 
-fun block2MD(block: BulletedListItemBlock, outPutMDPath: String, indentSize: Int = 0): String {
-    var str = ""
-    str += "${indent(indentSize)}- ${getRichText(block.bulletedListItem.richText)}\n"
-    if (block.hasChildren == true) {
-        str += block.id?.run { buildBody(loadBlocks(this), outPutMDPath, indentSize = indentSize + 1) }
-    }
-    return str
-}
+fun block2MD(block: BulletedListItemBlock, indentSize: Int = 0): String =
+    "${indent(indentSize)}- ${getRichText(block.bulletedListItem.richText)}\n"
 
-fun block2MD(block: NumberedListItemBlock, outPutMDPath: String, indentSize: Int = 0): String {
-    var str = ""
-    str += "${indent(indentSize)}1. ${getRichText(block.numberedListItem.richText)}\n"
-    if (block.hasChildren == true) {
-        str += block.id?.run { buildBody(loadBlocks(this), outPutMDPath, indentSize = indentSize + 1) }
-    }
-    return str
-}
+fun block2MD(block: NumberedListItemBlock, indentSize: Int = 0): String =
+    "${indent(indentSize)}1. ${getRichText(block.numberedListItem.richText)}\n"
 
 fun block2MD(block: BookmarkBlock): String = block.bookmark?.run { "[${this.url}](${this.url})" } + "\n"
 
 fun block2MD(block: LinkPreviewBlock): String = block.linkPreview?.run { "[${this.url}](${this.url})"} + "\n"
 
-fun block2MD(block: ColumnListBlock, outPutMDPath: String): String {
-    var str = ""
-    if (block.hasChildren == true) {
-        block.id?.let { id ->
-            for (columnBlock in loadBlocks(id)) {
-                if (columnBlock.type == BlockType.Column && columnBlock.asColumn().hasChildren == true) {
-                    str += columnBlock.id?.run { buildBody(loadBlocks(this), outPutMDPath) }
-                }
-            }
-        }
-    }
-    return str
-}
-
 fun block2MD(block: QuoteBlock): String = block.quote?.richText?.run { "> ${getRichText(this)}" } + "\n"
 
-fun block2MD(block: ToDoBlock, outPutMDPath: String, indentSize: Int): String {
-    var str = ""
+fun block2MD(block: ToDoBlock, indentSize: Int): String {
     val check = if (block.toDo.checked) "x" else " "
     val item = block.toDo.richText?.run { getRichText(this) } ?: ""
-    str += "${indent(indentSize)}- [$check] $item\n"
-    if (block.hasChildren == true) {
-        str += block.id?.run { buildBody(loadBlocks(this), outPutMDPath, indentSize = indentSize + 1) }
-    }
-    return str
+    return "${indent(indentSize)}- [$check] $item\n"
 }
 
 fun block2MD(block: CodeBlock): String {
