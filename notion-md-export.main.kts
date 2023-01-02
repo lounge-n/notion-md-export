@@ -5,6 +5,7 @@
 import notion.api.v1.NotionClient
 import notion.api.v1.http.JavaNetHttpClient
 import notion.api.v1.model.blocks.*
+import notion.api.v1.model.common.Emoji
 import notion.api.v1.model.common.PropertyType
 import notion.api.v1.model.common.RichTextType
 import notion.api.v1.model.databases.query.filter.PropertyFilter
@@ -73,6 +74,7 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
             BlockType.NumberedListItem -> block2MD(block.asNumberedListItem(), indentSize = indentSize)
             BlockType.LinkPreview -> block2MD(block.asLinkPreview())
             BlockType.Bookmark -> block2MD(block.asBookmark())
+            BlockType.Callout -> block2MD(block.asCallout())
             BlockType.Column -> ""  // NOP
             BlockType.ColumnList -> ""  // NOP
             BlockType.Divider -> "---\n"
@@ -213,6 +215,13 @@ fun block2MD(block: NumberedListItemBlock, indentSize: Int = 0): String =
 fun block2MD(block: BookmarkBlock): String = block.bookmark?.run { "[${this.url}](${this.url})" } + "\n"
 
 fun block2MD(block: LinkPreviewBlock): String = block.linkPreview?.run { "[${this.url}](${this.url})"} + "\n"
+
+fun block2MD(block: CalloutBlock): String {
+    return block.callout?.run {
+        val icon = this.icon?.run { (this as Emoji).emoji } ?: ""
+        this.richText?.run { "<aside>\n$icon${getRichText(this)}\n</aside>\n" }
+    } + "\n"
+}
 
 fun block2MD(block: QuoteBlock): String = block.quote?.richText?.run { "> ${getRichText(this)}" } + "\n"
 

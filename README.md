@@ -88,7 +88,7 @@ $ ./notion-md-export.kts <Notion auth token> <Notion database id>
 - [x] Toggle list
 - [x] Quote
 - [x] Divider
-- [ ] Call out
+- [x] Call out
 - [ ] Mention page, user
 - [x] Date
 - [x] Emoticon
