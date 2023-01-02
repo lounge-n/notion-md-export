@@ -92,7 +92,7 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
             }
         }
 
-        if (block.hasChildren == true) {
+        if (block.hasChildren == true && block.type != BlockType.ChildPage) {
             block.id?.let { id ->
                 val childBlocks = loadBlocks(id)
 
