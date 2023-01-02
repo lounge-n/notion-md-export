@@ -86,6 +86,7 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
             BlockType.Image -> block2MD(block.asImage(), Path.of(outPutMDPath).parent)
             BlockType.ChildPage -> block2MD(block.asChildPage())
             BlockType.Table -> block2MD(block.asTable())
+            BlockType.TableRow -> ""    // NOP
             else -> {
                 println("Unsupported:${block.type}")
             }
