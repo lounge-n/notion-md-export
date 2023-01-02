@@ -264,6 +264,10 @@ fun block2MD(block: ImageBlock, outPutPath: Path): String {
     var str = ""
     block.image?.let { image ->
         val caption = image.caption?.run { getRichText(this) }
+        image.external?.url?.let { externalUrl ->
+            str += "![$externalUrl]($externalUrl)\n"
+            if (!caption.isNullOrEmpty()) { str += "$caption\n" }
+        }
         image.file?.url?.let { imageUrl ->
             val url = URL(imageUrl)
             val path = Path.of(url.path)
@@ -272,7 +276,7 @@ fun block2MD(block: ImageBlock, outPutPath: Path): String {
             url.openStream().use {
                 writeBinary("$outPutPath/$fileName", it.readAllBytes())
             }
-            str += "![$caption](./$fileName)\n"
+            str += "![${caption ?: ""}](./$fileName)\n"
             if (!caption.isNullOrEmpty()) { str += "$caption\n" }
         }
     }
