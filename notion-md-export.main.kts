@@ -73,6 +73,7 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
             BlockType.NumberedListItem -> block2MD(block.asNumberedListItem(), indentSize = indentSize)
             BlockType.LinkPreview -> block2MD(block.asLinkPreview())
             BlockType.Bookmark -> block2MD(block.asBookmark())
+            BlockType.Column -> ""  // NOP
             BlockType.ColumnList -> ""  // NOP
             BlockType.Divider -> "---\n"
             BlockType.Quote -> block2MD(block.asQuote())
@@ -92,21 +93,13 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
             block.id?.let { id ->
                 val childBlocks = loadBlocks(id)
 
-                if (!isContinuousBlock(block.type, childBlocks[0].type)) {
+                if (childBlocks.size >= 1 && !isContinuousBlock(block.type, childBlocks[0].type)) {
                     str += "\n"
                 }
-
-                if (block.type == BlockType.ColumnList) {
-                    for ((columnIndex, columnBlock) in childBlocks.withIndex()) {
-                        if (columnBlock.type == BlockType.Column && columnBlock.asColumn().hasChildren == true) {
-                            str += columnBlock.id?.run { buildBody(loadBlocks(this), outPutMDPath) }
-                        }
-                        if (!isContinuousBlock(columnIndex, childBlocks)) {
-                            str += "\n"
-                        }
-                    }
+                str += if (block.type == BlockType.Column) {
+                    buildBody(childBlocks, outPutMDPath, indentSize = 0)    // reset Indent
                 } else {
-                    str += buildBody(childBlocks, outPutMDPath, indentSize = indentSize + 1)
+                    buildBody(childBlocks, outPutMDPath, indentSize = indentSize + 1)
                 }
             }
         } else {
@@ -122,7 +115,7 @@ fun isContinuousBlock(currentIndex: Int, blocks: MutableList<Block>): Boolean {
     if (blocks.size - currentIndex > 1) {
         return isContinuousBlock(blocks[currentIndex].type, blocks[currentIndex + 1].type)
     }
-    return false
+    return true
 }
 
 fun isContinuousBlock(currentBlockType: BlockType, nextBlockType: BlockType): Boolean {
