@@ -33,10 +33,10 @@ val queryResult = client.queryDatabase(
 )
 
 for (page in queryResult.results) {
+    val outputMDPath = createPath(getSlug(page), getPostDate(page))
     var str = buildHeader(page)
-    val outPutMDPath = createPath(getSlug(page), getPostDate(page))
-    str += buildBody(loadBlocks(page.id), outPutMDPath)
-    writeMD(outPutMDPath, str)
+    str += buildBody(loadBlocks(page.id), outputMDPath)
+    writeMD(outputMDPath, str)
     val propertyMap = mutableMapOf<String, PageProperty>()
     propertyMap[publishPropertyName] = PageProperty(checkbox = false)
     client.updatePage(page.id, propertyMap)
@@ -67,7 +67,7 @@ fun buildHeader(page: Page): String {
     return header
 }
 
-fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int = 0): String {
+fun buildBody(blocks: MutableList<Block>, outputMDPath: Path, indentSize: Int = 0): String {
     var str = ""
     for ((index, block) in blocks.withIndex()) {
         str += when (block.type) {
@@ -89,12 +89,12 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
             BlockType.Toggle -> block2MD(block.asToggle(), indentSize = indentSize)
             BlockType.Code -> block2MD(block.asCode())
             BlockType.Embed -> block2MD(block.asEmbed())
-            BlockType.Image -> block2MD(block.asImage(), Path.of(outPutMDPath).parent)
-            BlockType.File -> block2MD(block.asFile(), Path.of(outPutMDPath).parent)
+            BlockType.Image -> block2MD(block.asImage(), outputMDPath.parent)
+            BlockType.File -> block2MD(block.asFile(), outputMDPath.parent)
             BlockType.ChildPage -> block2MD(block.asChildPage())
             BlockType.Table -> block2MD(block.asTable())
             BlockType.TableRow -> ""    // NOP
-            BlockType.Audio -> block2MD(block.asAudio(), Path.of(outPutMDPath).parent)
+            BlockType.Audio -> block2MD(block.asAudio(), outputMDPath.parent)
             BlockType.Unsupported -> "" // NOP
             else -> {
                 println("Unsupported:${block.type}")
@@ -109,9 +109,9 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
                     str += "\n"
                 }
                 str += if (block.type == BlockType.Column) {
-                    buildBody(childBlocks, outPutMDPath, indentSize = 0)    // reset Indent
+                    buildBody(childBlocks, outputMDPath, indentSize = 0)    // reset Indent
                 } else {
-                    buildBody(childBlocks, outPutMDPath, indentSize = indentSize + 1)
+                    buildBody(childBlocks, outputMDPath, indentSize = indentSize + 1)
                 }
             }
         } else {
@@ -135,15 +135,15 @@ fun isContinuousBlock(currentBlockType: BlockType, nextBlockType: BlockType): Bo
     return types.contains(currentBlockType) && types.contains(nextBlockType)
 }
 
-fun createPath(orgSlug: String?, date: String?): String {
-    var path = "./content/"
+fun createPath(orgSlug: String?, date: String?): Path {
+    var pathStr = "./content/"
     var isIndividual = false
     var slug = orgSlug?.run {
         isIndividual = this.startsWith('/')
         this.replace(".", "").trim('/').lowercase()
     }
 
-    path += if (isIndividual) {
+    pathStr += if (isIndividual) {
         "$slug/index.md"
     } else {
         if (date.isNullOrEmpty()) {
@@ -166,7 +166,7 @@ fun createPath(orgSlug: String?, date: String?): String {
             }
         }
     }
-    return path
+    return Path.of(pathStr)
 }
 
 fun getTitle(page: Page): String? {
@@ -431,7 +431,7 @@ fun fileDownload(inputUrl: String, outPutDirPath: Path): Path {
     return Path.of("$outPutDirPath/$fileName")
 }
 
-fun writeMD(filePath: String, buf: String) {
-    Path.of(filePath).parent.toFile().mkdirs()
-    File(filePath).writeText(buf, Charset.forName("UTF-8"))
+fun writeMD(filePath: Path, buf: String) {
+    filePath.parent.toFile().mkdirs()
+    filePath.toFile().writeText(buf, Charset.forName("UTF-8"))
 }
