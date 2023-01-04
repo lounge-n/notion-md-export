@@ -97,6 +97,8 @@ $ ./notion-md-export.kts <Notion auth token> <Notion database id>
 - [x] Bookmark
 - [x] Embed audio
 - [ ] Linked audio (SDK not support)
-- [ ] Embed video, file
-- [ ] Linked video file
+- [ ] Embed video (SDK not support)
+- [x] Linked video
+- [ ] Embed file
+- [ ] Linked file
 - [x] Code

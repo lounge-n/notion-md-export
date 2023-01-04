@@ -79,6 +79,7 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
             BlockType.Column -> ""  // NOP
             BlockType.ColumnList -> ""  // NOP
             BlockType.Divider -> "---\n"
+            BlockType.Video -> block2MD(block.asVideo())
             BlockType.Quote -> block2MD(block.asQuote())
             BlockType.ToDo -> block2MD(block.asToDo(), indentSize = indentSize)
             BlockType.Toggle -> block2MD(block.asToggle(), indentSize = indentSize)
@@ -224,6 +225,17 @@ fun block2MD(block: CalloutBlock): String {
         val icon = this.icon?.run { (this as Emoji).emoji } ?: ""
         this.richText?.run { "<aside>\n$icon${getRichText(this)}\n</aside>\n" }
     } + "\n"
+}
+
+fun block2MD(block: VideoBlock): String {
+    var str = ""
+    val caption = block.video?.caption?.run { getRichText(this) }
+    block.video?.external?.url?.let { fileUrl ->
+        val description = if (caption.isNullOrEmpty()) fileUrl else caption
+        str += "[$description]($fileUrl)\n"
+        if (!caption.isNullOrEmpty()) { str += "\n$caption\n" }
+    }
+    return str
 }
 
 fun block2MD(block: QuoteBlock): String = block.quote?.richText?.run { "> ${getRichText(this)}" } + "\n"
