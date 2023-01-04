@@ -1,6 +1,4 @@
 # Notion markdown export
-💡 **This action is still in testing and is not recommended.**
-
 This action will export a Notion database page to your GitHub repository in Markdown format.
 
 ## Usage
