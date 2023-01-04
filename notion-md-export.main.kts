@@ -25,7 +25,7 @@ import kotlin.script.experimental.dependencies.DependsOn
 val token = args[0]
 val databaseId = args[1]
 val publishPropertyName = "Publish"
-val optionalProperties = listOf("Tags", "Categories", "Draft")
+val optionalProperties = listOf("Description", "Tags", "Categories", "Draft", "Keywords", "CreateDate")
 val client = NotionClient(token = token, httpClient = JavaNetHttpClient())
 val queryResult = client.queryDatabase(
     databaseId = databaseId,
@@ -209,6 +209,8 @@ fun findProperties(key: String, page: Page): String? {
                 }
             }
             PropertyType.Checkbox -> return property.checkbox?.run { "$this" }
+            PropertyType.RichText -> return property.richText?.run { "\"${this[0].plainText}\"" }
+            PropertyType.Date -> return property.date?.run { "\"${this.start}\""}
             else -> {}
         }
     }
