@@ -89,7 +89,7 @@ $ ./notion-md-export.kts <Notion auth token> <Notion database id>
 - [x] Quote
 - [x] Divider
 - [x] Call out
-- [ ] Mention page, user
+- [x] Mention page, user
 - [x] Date
 - [x] Emoticon
 - [x] Equation (but requires MathJax)

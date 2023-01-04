@@ -7,6 +7,7 @@ import notion.api.v1.http.JavaNetHttpClient
 import notion.api.v1.model.blocks.*
 import notion.api.v1.model.common.Emoji
 import notion.api.v1.model.common.PropertyType
+import notion.api.v1.model.common.RichTextMentionType
 import notion.api.v1.model.common.RichTextType
 import notion.api.v1.model.databases.query.filter.PropertyFilter
 import notion.api.v1.model.databases.query.filter.condition.CheckboxFilter
@@ -385,7 +386,14 @@ fun getRichText(richTextList: List<PageProperty.RichText>): String {
                 str += richText.equation?.run { "\$${this.expression}\$" } ?: ""
             }
             RichTextType.Mention -> {
-                str += richText.plainText?.run { this }
+                str += when (richText.mention?.type) {
+                    RichTextMentionType.User -> richText.plainText?.run { this }
+                    RichTextMentionType.Page -> {
+                        val pageName = richText.plainText?.run { this }
+                        "[${pageName ?: richText.href}](${richText.href})"
+                    }
+                    else -> ""
+                }
             }
         }
     }
