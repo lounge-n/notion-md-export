@@ -209,7 +209,11 @@ fun findProperties(key: String, page: Page): String? {
                 }
             }
             PropertyType.Checkbox -> return property.checkbox?.run { "$this" }
-            PropertyType.RichText -> return property.richText?.run { "\"${this[0].plainText}\"" }
+            PropertyType.RichText -> property.richText?.let {
+                if (it.isNotEmpty()) {
+                    return "\"${it[0].plainText}\""
+                }
+            }
             PropertyType.Date -> return property.date?.run { "\"${this.start}\""}
             else -> {}
         }
