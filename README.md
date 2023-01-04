@@ -61,6 +61,8 @@ None.
 | Slug | Text | Yes |
 | Publish | Checkbox | Yes |
 | Tags | MutliSelect | (Optional) |
+| Categories | MutliSelect | (Optional) |
+| Draft | Boolean | (Optional) |
 
 ## Markdown export path
 

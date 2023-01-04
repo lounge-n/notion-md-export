@@ -25,6 +25,7 @@ import kotlin.script.experimental.dependencies.DependsOn
 val token = args[0]
 val databaseId = args[1]
 val publishPropertyName = "Publish"
+val optionalProperties = listOf("Tags", "Categories", "Draft")
 val client = NotionClient(token = token, httpClient = JavaNetHttpClient())
 val queryResult = client.queryDatabase(
     databaseId = databaseId,
@@ -59,7 +60,9 @@ fun buildHeader(page: Page): String {
     var header = "---\n"
     getTitle(page)?.let { header += "title: \"$it\"\n"}
     getPostDate(page)?.let { header += "date: \"$it\"\n"}
-    getTags(page)?.let { header += "tags: [$it]\n"}
+    for (name in optionalProperties) {
+        findProperties(name, page)?.let { header += "${name.lowercase()}: $it\n"}
+    }
     header += "---\n"
     return header
 }
@@ -193,13 +196,21 @@ fun getSlug(page: Page): String? {
     return null
 }
 
-fun getTags(page: Page): String? {
-    page.properties["Tags"]?.multiSelect?.let { tags ->
-        val tagList = mutableListOf<String>()
-        for (tag in tags) {
-            tag.name?.let { tagList.add("\"$it\"") }
+fun findProperties(key: String, page: Page): String? {
+    page.properties[key]?.let { property ->
+        when (property.type) {
+            PropertyType.MultiSelect -> {
+                property.multiSelect?.let { options ->
+                    val tagList = mutableListOf<String>()
+                    for (option in options) {
+                        option.name?.let { tagList.add("\"$it\"") }
+                    }
+                    return if (tagList.size > 0) "[${tagList.joinToString(",")}]" else null
+                }
+            }
+            PropertyType.Checkbox -> return property.checkbox?.run { "$this" }
+            else -> {}
         }
-        return if (tagList.size > 0) tagList.joinToString(",") else null
     }
     return null
 }
