@@ -93,9 +93,10 @@ $ ./notion-md-export.kts <Notion auth token> <Notion database id>
 - [x] Date
 - [x] Emoticon
 - [x] Equation (but requires MathJax)
-- [x] Embed image
-- [x] Linked image
+- [x] Image (Embed and Linked)
 - [x] Bookmark
-- [ ] Embed video, audio, file
-- [ ] Linked video audio, file
+- [x] Embed audio
+- [ ] Linked audio (SDK not support)
+- [ ] Embed video, file
+- [ ] Linked video file
 - [x] Code
