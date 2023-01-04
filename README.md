@@ -62,7 +62,11 @@ None.
 | Publish | Checkbox | Yes |
 | Tags | MutliSelect | (Optional) |
 | Categories | MutliSelect | (Optional) |
+| Description | Text | (Optional) |
+| Keywords | MutliSelect | (Optional) |
 | Draft | Boolean | (Optional) |
+
+If you set the page cover, it will be set as the "thumbnail" of Front Matter.
 
 ## Markdown export path
 

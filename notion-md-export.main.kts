@@ -5,10 +5,7 @@
 import notion.api.v1.NotionClient
 import notion.api.v1.http.JavaNetHttpClient
 import notion.api.v1.model.blocks.*
-import notion.api.v1.model.common.Emoji
-import notion.api.v1.model.common.PropertyType
-import notion.api.v1.model.common.RichTextMentionType
-import notion.api.v1.model.common.RichTextType
+import notion.api.v1.model.common.*
 import notion.api.v1.model.databases.query.filter.PropertyFilter
 import notion.api.v1.model.databases.query.filter.condition.CheckboxFilter
 import notion.api.v1.model.pages.Page
@@ -25,7 +22,7 @@ import kotlin.script.experimental.dependencies.DependsOn
 val token = args[0]
 val databaseId = args[1]
 val publishPropertyName = "Publish"
-val optionalProperties = listOf("Description", "Tags", "Categories", "Draft", "Keywords", "CreateDate")
+val optionalProperties = listOf("Description", "Tags", "Categories", "Draft", "Keywords")
 val client = NotionClient(token = token, httpClient = JavaNetHttpClient())
 val queryResult = client.queryDatabase(
     databaseId = databaseId,
@@ -34,7 +31,7 @@ val queryResult = client.queryDatabase(
 
 for (page in queryResult.results) {
     val outputMDPath = createPath(getSlug(page), getPostDate(page))
-    var str = buildHeader(page)
+    var str = buildHeader(page, outputMDPath)
     str += buildBody(loadBlocks(page.id), outputMDPath)
     writeMD(outputMDPath, str)
     val propertyMap = mutableMapOf<String, PageProperty>()
@@ -56,10 +53,11 @@ fun loadBlocks(blockId: String): MutableList<Block> {
     return blocks
 }
 
-fun buildHeader(page: Page): String {
+fun buildHeader(page: Page, outputPath: Path): String {
     var header = "---\n"
     getTitle(page)?.let { header += "title: \"$it\"\n"}
     getPostDate(page)?.let { header += "date: \"$it\"\n"}
+    getCover(page, outputPath.parent)?.let { header += "thumbnail: \"$it\"\n"}
     for (name in optionalProperties) {
         findProperties(name, page)?.let { header += "${name.lowercase()}: $it\n"}
     }
@@ -187,6 +185,20 @@ fun getPostDate(page: Page): String? {
     return null
 }
 
+fun getCover(page: Page, outputPath: Path): String? {
+    return (page.cover as? notion.api.v1.model.common.File)?.run {
+        when (this.type) {
+            FileType.External -> this.external?.url
+            FileType.File -> {
+                this.file?.url?.run {
+                    "./" + fileDownload(this, outputPath).fileName.toString()
+                }
+            }
+            else -> { null }
+        }
+    }
+}
+
 fun getSlug(page: Page): String? {
     page.properties["Slug"]?.richText?.let {
         if (it.isNotEmpty()) {
@@ -294,7 +306,7 @@ fun block2MD(block: EmbedBlock): String {
     return str
 }
 
-fun block2MD(block: ImageBlock, outPutPath: Path): String {
+fun block2MD(block: ImageBlock, outputPath: Path): String {
     var str = ""
     block.image?.let { image ->
         val caption = image.caption?.run { getRichText(this) }
@@ -306,7 +318,7 @@ fun block2MD(block: ImageBlock, outPutPath: Path): String {
         image.file?.url?.let { imageUrl ->
             val originFileName = getFileName(imageUrl)
             val description = if (caption.isNullOrEmpty()) originFileName else caption
-            val downloadPath = fileDownload(imageUrl, outPutPath)
+            val downloadPath = fileDownload(imageUrl, outputPath)
             str += "![$description](./${downloadPath.fileName})\n"
             if (!caption.isNullOrEmpty()) { str += "\n$caption\n" }
         }
@@ -314,7 +326,7 @@ fun block2MD(block: ImageBlock, outPutPath: Path): String {
     return str
 }
 
-fun block2MD(block: FileBlock, outPutPath: Path): String {
+fun block2MD(block: FileBlock, outputPath: Path): String {
     var str = ""
     block.file?.let { file ->
         val caption = file.caption?.run { getRichText(this) }
@@ -326,7 +338,7 @@ fun block2MD(block: FileBlock, outPutPath: Path): String {
         file.file?.url?.let { fileUrl ->
             val originFileName = getFileName(fileUrl)
             val description = if (caption.isNullOrEmpty()) originFileName else caption
-            val downloadPath = fileDownload(fileUrl, outPutPath)
+            val downloadPath = fileDownload(fileUrl, outputPath)
             str += "[$description](./${downloadPath.fileName})\n"
             if (!caption.isNullOrEmpty()) { str += "\n$caption\n" }
         }
