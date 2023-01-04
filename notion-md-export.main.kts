@@ -86,6 +86,7 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
             BlockType.Code -> block2MD(block.asCode())
             BlockType.Embed -> block2MD(block.asEmbed())
             BlockType.Image -> block2MD(block.asImage(), Path.of(outPutMDPath).parent)
+            BlockType.File -> block2MD(block.asFile(), Path.of(outPutMDPath).parent)
             BlockType.ChildPage -> block2MD(block.asChildPage())
             BlockType.Table -> block2MD(block.asTable())
             BlockType.TableRow -> ""    // NOP
@@ -288,6 +289,26 @@ fun block2MD(block: ImageBlock, outPutPath: Path): String {
             val description = if (caption.isNullOrEmpty()) originFileName else caption
             val downloadPath = fileDownload(imageUrl, outPutPath)
             str += "![$description](./${downloadPath.fileName})\n"
+            if (!caption.isNullOrEmpty()) { str += "\n$caption\n" }
+        }
+    }
+    return str
+}
+
+fun block2MD(block: FileBlock, outPutPath: Path): String {
+    var str = ""
+    block.file?.let { file ->
+        val caption = file.caption?.run { getRichText(this) }
+        file.external?.url?.let { externalUrl ->
+            val description = if (caption.isNullOrEmpty()) externalUrl else caption
+            str += "[$description]($externalUrl)\n"
+            if (!caption.isNullOrEmpty()) { str += "\n$caption\n" }
+        }
+        file.file?.url?.let { fileUrl ->
+            val originFileName = getFileName(fileUrl)
+            val description = if (caption.isNullOrEmpty()) originFileName else caption
+            val downloadPath = fileDownload(fileUrl, outPutPath)
+            str += "[$description](./${downloadPath.fileName})\n"
             if (!caption.isNullOrEmpty()) { str += "\n$caption\n" }
         }
     }
