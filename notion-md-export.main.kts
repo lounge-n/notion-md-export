@@ -91,6 +91,7 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
             BlockType.Table -> block2MD(block.asTable())
             BlockType.TableRow -> ""    // NOP
             BlockType.Audio -> block2MD(block.asAudio(), Path.of(outPutMDPath).parent)
+            BlockType.Unsupported -> "" // NOP
             else -> {
                 println("Unsupported:${block.type}")
             }
