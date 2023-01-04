@@ -14,6 +14,7 @@ import notion.api.v1.model.pages.Page
 import notion.api.v1.model.pages.PageProperty
 import java.io.File
 import java.net.URL
+import java.net.URLDecoder
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.time.LocalDate
@@ -87,6 +88,7 @@ fun buildBody(blocks: MutableList<Block>, outPutMDPath: String, indentSize: Int 
             BlockType.ChildPage -> block2MD(block.asChildPage())
             BlockType.Table -> block2MD(block.asTable())
             BlockType.TableRow -> ""    // NOP
+            BlockType.Audio -> block2MD(block.asAudio(), Path.of(outPutMDPath).parent)
             else -> {
                 println("Unsupported:${block.type}")
             }
@@ -265,19 +267,16 @@ fun block2MD(block: ImageBlock, outPutPath: Path): String {
     block.image?.let { image ->
         val caption = image.caption?.run { getRichText(this) }
         image.external?.url?.let { externalUrl ->
-            str += "![$externalUrl]($externalUrl)\n"
-            if (!caption.isNullOrEmpty()) { str += "$caption\n" }
+            val description = if (caption.isNullOrEmpty()) externalUrl else caption
+            str += "![$description]($externalUrl)\n"
+            if (!caption.isNullOrEmpty()) { str += "\n$caption\n" }
         }
         image.file?.url?.let { imageUrl ->
-            val url = URL(imageUrl)
-            val path = Path.of(url.path)
-            val extension = path.fileName.toString().substringAfterLast('.', "")
-            val fileName = "${path.parent.fileName}.$extension"
-            url.openStream().use {
-                writeBinary("$outPutPath/$fileName", it.readAllBytes())
-            }
-            str += "![${caption ?: ""}](./$fileName)\n"
-            if (!caption.isNullOrEmpty()) { str += "$caption\n" }
+            val originFileName = getFileName(imageUrl)
+            val description = if (caption.isNullOrEmpty()) originFileName else caption
+            val downloadPath = fileDownload(imageUrl, outPutPath)
+            str += "![$description](./${downloadPath.fileName})\n"
+            if (!caption.isNullOrEmpty()) { str += "\n$caption\n" }
         }
     }
     return str
@@ -315,6 +314,20 @@ fun block2MD(block: TableBlock): String {
     return str
 }
 
+fun block2MD(block: AudioBlock, outputPath: Path): String {
+    var str = ""
+    if (block.audio.type == "file") {
+        block.audio.file?.url?.let { fileUrl ->
+            val fileName = fileDownload(fileUrl, outputPath).fileName
+            var caption = block.audio.caption?.run { getRichText(this) }
+            val description = if(caption.isNullOrEmpty()) getFileName(fileUrl) else caption
+            str += "[$description](./$fileName)\n"
+            if (!caption.isNullOrEmpty()) { str += "\n$caption\n" }
+        }
+    }
+    return str
+}
+
 fun indent(size: Int): String = "\t".repeat(size)
 
 fun getRichText(richTextList: List<PageProperty.RichText>): String {
@@ -345,9 +358,18 @@ fun getRichText(richTextList: List<PageProperty.RichText>): String {
     return str.replace("\n", "  \n")
 }
 
-fun writeBinary(filePath: String, array: ByteArray) {
-    Path.of(filePath).parent.toFile().mkdirs()
-    File(filePath).writeBytes(array)
+fun getFileName(url: String): String = URLDecoder.decode(Path.of(URL(url).path).fileName.toString(), "UTF-8")
+
+fun fileDownload(inputUrl: String, outPutDirPath: Path): Path {
+    val url = URL(inputUrl)
+    val path = Path.of(url.path)
+    val extension = path.fileName.toString().substringAfterLast('.', "")
+    val fileName = "${path.parent.fileName}.$extension"
+    url.openStream().use {
+        outPutDirPath.toFile().mkdirs()
+        File("$outPutDirPath/$fileName").writeBytes(it.readAllBytes())
+    }
+    return Path.of("$outPutDirPath/$fileName")
 }
 
 fun writeMD(filePath: String, buf: String) {
