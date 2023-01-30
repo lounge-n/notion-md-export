@@ -366,11 +366,11 @@ fun block2MD(block: TableBlock): String {
                     if (index == 1) {
                         str += "|"+" --- |".repeat(colNum)+"\n"
                     }
-                    val celList = mutableListOf<String>()
+                    val cellList = mutableListOf<String>()
                     for (richText in rowBlocks.asTableRow().tableRow.cells) {
-                        celList.add(getRichText(richText))
+                        cellList.add(getRichText(richText).replace("  \n", "</br>"))
                     }
-                    str += "|${celList.joinToString("|")}|\n"
+                    str += "|${cellList.joinToString("|")}|\n"
                 }
             }
         }
