@@ -368,7 +368,7 @@ fun block2MD(block: TableBlock): String {
                     }
                     val celList = mutableListOf<String>()
                     for (richText in rowBlocks.asTableRow().tableRow.cells) {
-                        celList.add(getRichText(richText))
+                        celList.add(getRichText(richText).replace("  \n", "</br>"))
                     }
                     str += "|${celList.joinToString("|")}|\n"
                 }
