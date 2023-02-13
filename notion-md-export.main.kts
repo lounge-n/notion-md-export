@@ -22,7 +22,7 @@ import kotlin.script.experimental.dependencies.DependsOn
 val token = args[0]
 val databaseId = args[1]
 val publishPropertyName = "Publish"
-val optionalProperties = listOf("Description", "Tags", "Categories", "Draft", "Keywords")
+val optionalProperties = listOf("Description", "Tags", "Categories", "Draft", "Keywords", "Aliases")
 val client = NotionClient(token = token, httpClient = JavaNetHttpClient())
 val queryResult = client.queryDatabase(
     databaseId = databaseId,
