@@ -52,17 +52,18 @@ None.
 
 ### Notion database properties
 
-|  | Property Type | Required |
-| --- | --- | --- |
-| Title | Title | Yes |
-| Date | Date | Yes |
-| Slug | Text | Yes |
-| Publish | Checkbox | Yes |
-| Tags | MutliSelect | (Optional) |
-| Categories | MutliSelect | (Optional) |
-| Description | Text | (Optional) |
-| Keywords | MutliSelect | (Optional) |
-| Draft | Boolean | (Optional) |
+|  | Property Type       | Required    |
+| --- |---------------------|-------------|
+| Title | Title               | Yes         |
+| Date | Date                | Yes         |
+| Slug | Text                | Yes         |
+| Publish | Checkbox            | Yes         |
+| Tags | MutliSelect         | (Optional)  |
+| Categories | MutliSelect         | (Optional)  |
+| Description | Text                | (Optional)  |
+| Keywords | MutliSelect         | (Optional)  |
+| Draft | Boolean             | (Optional)  |
+| Aliases | Text or MutliSelect | (Optional)  |
 
 If you set the page cover, it will be set as the "thumbnail" of Front Matter.
 
