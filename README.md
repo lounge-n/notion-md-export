@@ -1,5 +1,6 @@
 # Notion markdown export
-This action will export a Notion database page to your GitHub repository in Markdown format.
+Welcome to Notion markdown export, a tool that allows you to export your Notion documents as Markdown files. With this program, you can easily convert your notes, project plans, and other documents from Notion into a format that is compatible with Hugo, a popular static site generator.
+By using GitHub Actions to automate the export process, you can quickly and easily publish your Notion content on GitHub Pages. Whether you are a blogger, developer, or content creator, notion-md-export can help you streamline your workflow and share your ideas with the world.
 
 ## Usage
 
