@@ -68,11 +68,15 @@ None.
 If you set the page cover, it will be set as the "thumbnail" of Front Matter.
 
 ## Markdown export path
-
-| Date / Slug | About | /About | (None) |
+||Date|Slug|Export path|
 | --- | --- | --- | --- |
-| 2022-12-24 | ./content/post/2022/12/24/about/ | ./content/about/ | ./content/post/2022/12/24/ |
-| (None) | ./content/about/ | ./content/about/ | ./content/default/ |
+|1|2022-12-24|About|./content/post/2022/12/24/about/|
+|2|2022-12-24|/About|./content/about/|
+|3|2022-12-24|(None)|./content/post/2022/12/24/|
+|4|(None)|About|./content/about/|
+|5|(None)|/About|./content/about/|
+|6|(None)|(None)|./content/default/|
+
 
 ## Usage CLI
 
